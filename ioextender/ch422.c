@@ -37,20 +37,25 @@ bool init_io_extender(ch442_context_t* context, i2c_read read,
   }
   context->i2c_read_handle = read;
   context->i2c_write_handle = write;
-  sys_config_t config = {.io_oe = 1, .a_scan = 0, .od_en = 0, .sleep = 0};
+  sys_config_t config = {
+      .value = 0, .io_oe = 1, .a_scan = 0, .od_en = 0, .sleep = 0};
   ch442_write(context, SET_CONFIG, config.value);
   return true;
 }
 
 static void ch442_write(ch442_context_t* context, cmd_t cmd, uint8_t data) {
   uint8_t buf[] = {(uint8_t)cmd, data};
-  context->i2c_write_handle(buf, sizeof(buf));
+  if (context->i2c_write_handle != NULL) {
+    context->i2c_write_handle(buf, sizeof(buf));
+  }
 }
 
 static uint8_t ch442_read(ch442_context_t* context, cmd_t cmd) {
   uint8_t ret = 0x0;
   uint8_t data = (uint8_t)cmd;
-  context->i2c_read_handle(data, &ret, 1);
+  if (context->i2c_read_handle != NULL) {
+    context->i2c_read_handle(data, &ret, 1);
+  }
   return ret;
 }
 
